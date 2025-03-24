@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Key Handling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #game-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Key Handling</h1>
+    <div id="game-info">Press WSAD or Arrow Keys to move!</div>
+    <canvas id="game-canvas" width="400" height="400"></canvas>
+
+    <script>
+        // Game Canvas Setup
+        const canvas = document.getElementById("game-canvas");
+        const ctx = canvas.getContext("2d");
+
+
+        // Key State Manager
+        const keys = {}; // Tracks the state of each key (true = pressed, false = released)
+
+        // Event Listeners for Key Presses
+        document.addEventListener("keydown", (e) => {
+            keys[e.key.toLowerCase()] = true; // Mark the key as pressed
+        });
+
+        document.addEventListener("keyup", (e) => {
+            keys[e.key.toLowerCase()] = false; // Mark the key as released
+        });
+
+        // Game Logic Variables
+        let playerPosition = { x: 0, y: 0 }; // Player's position on a 2D plane
+
+        // Game Loop
+        function gameLoop() {
+            // Update Player Position Based on Key States
+            if (keys["w"] || keys["arrowup"]) playerPosition.y -= 1; // Move up
+            if (keys["s"] || keys["arrowdown"]) playerPosition.y += 1; // Move down
+            if (keys["a"] || keys["arrowleft"]) playerPosition.x -= 1; // Move left
+            if (keys["d"] || keys["arrowright"]) playerPosition.x += 1; // Move right
+
+            // Display Player Position
+            document.getElementById("game-info").textContent = 
+                `Player Position: X=${playerPosition.x}, Y=${playerPosition.y}`;
+            
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Fill the canvas with the specified color
+            ctx.fillStyle = "grey";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "blue";
+            ctx.fillRect(playerPosition.x, playerPosition.y, 20, 20);
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            const text = "Press WSAD or Arrow Keys to move!";
+            const textWidth = ctx.measureText(text).width;
+            const x = (canvas.width - textWidth) / 2; // Center horizontally
+            const y = canvas.height / 2; // Center vertically
+            ctx.fillText(text, x, y);
+
+
+
+            // Continue the game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the Game Loop
+        gameLoop();
+    </script>
+</body>
+</html>
