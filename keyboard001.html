@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Keyboard</title>
+</head>
+<body>
+    
+    <input id="key" placeholder="pressed key">
+
+    <script>
+        const input = document.getElementById("key");
+
+        function clearInputAfterDelay() {
+            setTimeout(() => {
+                input.value = ""; 
+            }, 1000);
+        }
+
+        document.addEventListener("keydown",(e)=>{
+            // Key Logging
+            console.log("Key: " + e.key);
+            // Handling WSAD Keys
+            let key = e.key.toLowerCase();
+            if(key === "a"){
+                input.value = "Key: a";
+            }
+            if(key === "d"){
+                input.value = "Key: d";
+            }
+            if(key === "w"){
+                input.value = "Key: w";
+            }
+            if(key === "s"){
+                input.value = "Key: s";
+            }
+            // Handling Arrow Keys
+            switch (e.key) {
+                case 'ArrowUp':
+                                input.value ='Key: Up';
+                                break;
+                case 'ArrowDown':
+                                input.value ='Key: Down';
+                                break;
+                case 'ArrowLeft':
+                                input.value ='Key: Left';
+                                break;
+                case 'ArrowRight':
+                                input.value = 'Key: Right';
+                                break;
+            }
+            // Handling Modifier Keys
+            // Ctrl + key
+            if (e.ctrlKey && e.key === 's') {
+                alert('Keys: Ctrl + S');
+            }
+            // Shift + key
+            if (e.shiftKey && e.key === 'S') {
+                alert('Keys: Shift + S');
+            }
+            // Alt + key
+            if (e.altKey && e.key === 's') {
+                alert('Keys: Alt + S');
+            }
+            clearInputAfterDelay();
+        });
+    </script>
+
+</body>
+</html>
