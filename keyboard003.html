@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fixed Frequency Input + Smooth Animations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        canvas {
+            border: 2px solid black;
+            display: block;
+            margin: 0 auto;
+        }
+        #game-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fixed Frequency Input + Smooth Animations</h1>
+    <canvas id="game-canvas" width="400" height="400"></canvas>
+    <div id="game-info">Press WSAD or Arrow Keys!</div>
+
+    <script>
+        // Canvas Setup
+        const canvas = document.getElementById("game-canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Key State Manager
+        const keys = {}; // Tracks the state of each key (true = pressed, false = released)
+
+        // Event Listeners for Key Presses
+        document.addEventListener("keydown", (e) => {
+            keys[e.key.toLowerCase()] = true; // Mark the key as pressed
+        });
+
+        document.addEventListener("keyup", (e) => {
+            keys[e.key.toLowerCase()] = false; // Mark the key as released
+        });
+
+        // Game Logic Variables
+        let playerPosition = { x: 200, y: 200 }; // Player's position on the canvas
+        const playerSpeed = 20; // Speed of movement
+
+        // Fixed Frequency Input Processing (Every 1000ms)
+        setInterval(() => {
+            if (keys["w"] || keys["arrowup"]) playerPosition.y -= playerSpeed; // Move up
+            if (keys["s"] || keys["arrowdown"]) playerPosition.y += playerSpeed; // Move down
+            if (keys["a"] || keys["arrowleft"]) playerPosition.x -= playerSpeed; // Move left
+            if (keys["d"] || keys["arrowright"]) playerPosition.x += playerSpeed; // Move right
+        }, 1000); // Update game state every 1000ms
+
+        // Smooth Animation with requestAnimationFrame
+        function gameLoop() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the player (a blue square)
+            ctx.fillStyle = "blue";
+            ctx.fillRect(playerPosition.x, playerPosition.y, 20, 20);
+
+            // Display Player Position
+            document.getElementById("game-info").textContent = 
+                `Player Position: X=${Math.round(playerPosition.x)}, Y=${Math.round(playerPosition.y)}`;
+
+            // Continue the animation loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the Game Loop
+        gameLoop();
+    </script>
+</body>
+</html>
