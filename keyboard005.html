@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fixed Frame Rate (30 FPS)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        canvas {
+            border: 2px solid black;
+            display: block;
+            margin: 0 auto;
+        }
+        #game-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fixed Frame Rate (30 FPS)</h1>
+    <canvas id="game-canvas" width="400" height="400"></canvas>
+    <div id="game-info">Press WSAD or Arrow Keys!</div>
+
+    <script>
+        // Canvas Setup
+        const canvas = document.getElementById("game-canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Key State Manager
+        const keys = {}; // Tracks the state of each key (true = pressed, false = released)
+
+        // Event Listeners for Key Presses
+        document.addEventListener("keydown", (e) => {
+            keys[e.key.toLowerCase()] = true; // Mark the key as pressed
+        });
+
+        document.addEventListener("keyup", (e) => {
+            keys[e.key.toLowerCase()] = false; // Mark the key as released
+        });
+
+        // Game Logic Variables
+        let playerPosition = { x: 200, y: 200 }; // Current position
+        let targetPosition = { x: 200, y: 200 }; // Target position
+        const playerSpeed = 20; // Speed in pixels per second
+        const updateInterval = 1000; // Interval for input processing (1000ms)
+        const frameRate = 30; // Desired frame rate (30 FPS)
+        const frameTime = 1000 / frameRate; // Time per frame in milliseconds (33.33ms)
+
+        // Fixed Frequency Input Processing (Every 1000ms)
+        setInterval(() => {
+            if (keys["w"] || keys["arrowup"]) targetPosition.y -= playerSpeed; // Move up
+            if (keys["s"] || keys["arrowdown"]) targetPosition.y += playerSpeed; // Move down
+            if (keys["a"] || keys["arrowleft"]) targetPosition.x -= playerSpeed; // Move left
+            if (keys["d"] || keys["arrowright"]) targetPosition.x += playerSpeed; // Move right
+        }, updateInterval);
+
+        // Smooth Animation with Fixed Frame Rate (30 FPS)
+        let lastFrameTime = performance.now(); // Track the time of the last frame
+
+        function gameLoop(currentTime) {
+            currentTime = performance.now();
+            // Calculate the elapsed time since the last frame
+            const deltaTime = (currentTime - lastFrameTime) / 1000; // Convert to seconds
+            lastFrameTime = currentTime;
+
+            // Interpolate position toward the target
+            playerPosition.x += (targetPosition.x - playerPosition.x) * (deltaTime * frameRate);
+            playerPosition.y += (targetPosition.y - playerPosition.y) * (deltaTime * frameRate);
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the player (a blue square)
+            ctx.fillStyle = "blue";
+            ctx.fillRect(playerPosition.x, playerPosition.y, 20, 20);
+
+            // Display Player Position
+            document.getElementById("game-info").textContent = 
+                `Player Position: X=${Math.round(playerPosition.x)}, Y=${Math.round(playerPosition.y)}`;
+
+            // Schedule the next frame
+            setTimeout(() => {
+                requestAnimationFrame(gameLoop);
+            }, frameTime - (performance.now() - currentTime));
+        }
+
+        // Start the Game Loop
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
