@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprity z Tilesetami</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      background-color: #f0f0f0;
+    }
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .controls button {
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button id="addSprite">Dodaj Sprite</button>
+    <button id="clearSprites">Wyczyść Sprity</button>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Ustawienia canvasa
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Tablica przechowująca wszystkie sprity
+    let sprites = [];
+    // Klasa reprezentująca sprite
+    class Sprite {
+      constructor(x, y, frameX, frameY, img,tilesetWidth,tilesetHeight,fps = 1) {
+        this.lastUpdate = 0;
+        this.fps = fps;
+        this.x = x;
+        this.y = y;
+        this.frameX = frameX; // Indeks kolumny w tilesecie
+        this.frameY = frameY; // Indeks wiersza w tilesecie
+        this.width = 32;
+        this.height = 32;
+        this.dx = Math.random() * 4 - 2; // Losowa prędkość w osi X
+        this.dy = Math.random() * 4 - 2; // Losowa prędkość w osi Y
+        this.tilesetImage = new Image();
+        this.tilesetImage.src = img; // Ścieżka do obrazu tilesetu
+        this.tilesetWidth = tilesetWidth; // Szerokość tilesetu
+        this.tilesetHeight = tilesetHeight; // Wysokość tilesetu
+    }
+
+      // Rysowanie sprite'a na canvasie
+      draw() {
+        ctx.drawImage(
+            this.tilesetImage, // Źródło obrazu (tileset)
+          this.frameX * this.tilesetWidth, // Pozycja X początku fragmentu w tilesecie
+          this.frameY * this.tilesetHeight, // Pozycja Y początku fragmentu w tilesecie
+          this.tilesetWidth, // Szerokość fragmentu
+          this.tilesetHeight, // Wysokość fragmentu
+          this.x, // Pozycja X na canvasie
+          this.y, // Pozycja Y na canvasie
+          this.width, // Szerokość sprite'a na canvasie
+          this.height // Wysokość sprite'a na canvasie
+        );
+      }
+
+      // Aktualizacja pozycji sprite'a
+      update() {
+        if (performance.now() - this.lastUpdate > 1000 / this.fps) {
+            this.lastUpdate = performance.now();
+            this.frameX = (this.frameX+1)%8;
+        }
+        
+        
+        
+        this.x += this.dx;
+        this.y += this.dy;
+
+        // Odbicie od krawędzi canvasa
+        if (this.x <= 0) {
+          this.dx *= -1;
+          this.x = 0;
+        }
+        if ( this.x + this.width >= canvas.width) {
+          this.dx *= -1;
+          this.x = canvas.width - this.width;
+        }
+        if (this.y <= 0){
+          this.dy *= -1;
+          this.y = 0;
+        }
+        if(this.y + this.height >= canvas.height) {
+          this.dy *= -1;
+          this.y = canvas.height - this.height;
+        }
+      }
+    }
+
+    // Funkcja do sprawdzania kolizji między dwoma spritami
+    function checkCollision(sprite1, sprite2) {
+      return !(
+        sprite1.x + sprite1.width < sprite2.x ||
+        sprite1.x > sprite2.x + sprite2.width ||
+        sprite1.y + sprite1.height < sprite2.y ||
+        sprite1.y > sprite2.y + sprite2.height
+      );
+    }
+
+    // Funkcja do rysowania i aktualizacji wszystkich spritów
+    function updateCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < sprites.length; i++) {
+        sprites[i].update();
+        sprites[i].draw();
+
+        // Sprawdź kolizje między spritami
+        for (let j = i + 1; j < sprites.length; j++) {
+          if (checkCollision(sprites[i], sprites[j])) {
+            // Zmiana koloru tła w przypadku kolizji
+            let horizontal = Math.abs(sprites[i].x - sprites[j].x);
+            let vertical = Math.abs(sprites[i].y - sprites[j].y);
+            
+            sprites[i].x -= sprites[i].dx;
+            sprites[i].y -= sprites[i].dy;
+            sprites[j].x -= sprites[j].dx;
+            sprites[j].y -= sprites[j].dy;
+            
+            if (horizontal > vertical) {
+                if(sprites[i].dx * sprites[j].dx < 0){
+                    sprites[i].dx *= -1;
+                    sprites[j].dx *= -1;
+
+                }
+                else
+                if(sprites[i].dx > sprites[j].dx){
+                    sprites[i].dx *= -1;
+                }
+                else{
+                    sprites[j].dx *= -1;
+                }
+            }
+            else{
+                if(sprites[i].dy * sprites[j].dy < 0){
+                    sprites[i].dy *= -1;
+                    sprites[j].dy *= -1;
+                }
+                else
+                if(sprites[i].dy > sprites[j].dy){
+                    sprites[i].dy *= -1;
+                    
+                }
+                else{
+                    sprites[j].dy *= -1;
+                    
+                }
+
+
+            }
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(sprites[i].x, sprites[i].y, sprites[i].width, sprites[i].height);
+            ctx.fillRect(sprites[j].x, sprites[j].y, sprites[j].width, sprites[j].height);
+          }
+        }
+      }
+
+      requestAnimationFrame(updateCanvas);
+    }
+
+    // Dodanie nowego sprite'a
+    document.getElementById('addSprite').addEventListener('click', () => {
+      const x = Math.random() * (canvas.width - 16);
+      const y = Math.random() * (canvas.height - 16);
+      const frameX = Math.floor(Math.random() * 8); // Losowy indeks kolumny w tilesecie
+      const frameY = Math.floor(Math.random() * 8); // Losowy indeks wiersza w tilesecie
+
+      sprites.push(new Sprite(x, y, frameX, frameY,"tileset.png",16,16));
+    });
+
+    // Wyczyszczenie wszystkich spritów
+    document.getElementById('clearSprites').addEventListener('click', () => {
+      sprites = [];
+    });
+
+    // Rozpoczęcie animacji po załadowaniu tilesetu
+    setTimeout(() => {
+      updateCanvas();
+    } , 5000);
+    
+  </script>
+</body>
+</html>
